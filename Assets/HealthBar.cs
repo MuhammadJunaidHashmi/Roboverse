@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class display : MonoBehaviour
+public class HealthBar : MonoBehaviour
 {
     public Text speed;
     public Text mass;
     public Text velocity;
     public Text damage;
     public Slider slider;
-    public int maxHealth = 100;
-    public int currentHealth = 0;
+    public float maxHealth = 100;
+    public float currentHealth = 0;
 
     Rigidbody rd;
 
@@ -26,17 +26,17 @@ public class display : MonoBehaviour
         controller =GetComponent<PrometeoCarController>();
         InvokeRepeating("CarSpeedUI", 0f, 0.1f);
     }
-    public void Damage(int damage,display ds)
+    public void DamageHealth(float damage, HealthBar hb)
     {
         // Adjust health
-        ds.currentHealth -= damage;
+        hb.currentHealth -= damage;
 
-        if (currentHealth < 0) currentHealth = 0;
+        if (hb.currentHealth < 0) hb.currentHealth = 0;
         // Adjust healthbar.
-        SetMaxHealth(currentHealth);
+        SetHealth(hb.currentHealth);
   
         // If health is 0 or less, run Die animation.
-        if (currentHealth <= 0)
+        if (hb.currentHealth <= 0)
         {
             Die();
         }
@@ -48,14 +48,14 @@ public class display : MonoBehaviour
     private void Die()
     {
         // Die action here.
-       // anim.SetTrigger("DIE");
+     
     }
-    public void SetMaxHealth(int health)
+    public void SetMaxHealth(float health)
     {
         slider.maxValue = health;
         slider.value = health;
     }
-    public void SetHealth(int health)
+    public void SetHealth(float health)
     {
         slider.value = health;
     }

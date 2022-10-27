@@ -17,19 +17,14 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
 
     private float rayInput = 0f;
     //private float throttleAxis = 0f;
-    private float speed = 2.5f;
+    private float speed = 25f;
     //private float maxHealth = 100;
     //private float currentHealth = 0;
     //display Display;
-    private GameObject[] healthObjs;
+
     List<PrometeoCarController> lis;
 
-    /*private void Start()
-    {
-        Display = GetComponent<display>();
-        maxHealth = currentHealth = Display.maxHealth;
-    }*/
-
+  
     public enum AIstate
     {
         idle,
@@ -37,16 +32,6 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
         attacking
     };
     public AIstate aiState = AIstate.persuing;
-
-    /*void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            if (currentHealth <= maxHealth)
-                currentHealth -= (collision.relativeVelocity.magnitude * 0.5f);
-            FindTarget();
-        }
-    }*/
 
     public void FindTarget()
     {
@@ -75,42 +60,32 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
 
     public void think()
     {
-        /*while(true)
-        {*/
         switch (aiState)
         {
             case AIstate.idle:
-                //Vector3 direction = (target.position - transform.position).normalized;
-                //float angle = Vector3.Angle(transform.forward, direction);
                 float dis = Vector3.Distance(targetChase.position, transform.position);
                 if (dis > 15)
                 {
-                    //  transform.LookAt(target);
                     aiState = AIstate.persuing;
                 }
                 if (dis < AttackingDistance + 2)
                 {
                     aiState = AIstate.attacking;
                 }
-                //navigator.SetDestination(transform.position);
                 break;
 
             case AIstate.persuing:
-                // direction = (target.position - transform.position).normalized;
-                //angle = Vector3.Angle(transform.forward, direction);
                 dis = Vector3.Distance(targetChase.position, transform.position);
-                //   transform.LookAt(target);
-                // controller.GoForward();
+               
                 if (dis < 4)
                 {
                     aiState = AIstate.idle;
                 }
-                //navigator.SetDestination(targetChase.position);
+             
                 break;
 
             case AIstate.attacking:
-                //navigator.SetDestination(transform.position);
-                //    transform.LookAt(target);
+              
                 dis = Vector3.Distance(targetChase.position, transform.position);
                 if (dis > 15)
                 {
@@ -158,11 +133,6 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
     }
     void Update()
     {
-      //  Display.slider.value = currentHealth;
-        //d.SetHealth(currentHealth);
-        //	navigator.transform.localPosition = new Vector3(0, carController.frontLeftCollider.transform.localPosition.y, carController.frontLeftCollider.transform.localPosition.z);
-        //	
-        //	navigator.SetDestination(targetChase.position);
         think();
     }
 
@@ -177,10 +147,7 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
 
     void FixedUpdate()
     {
-        Navigation();       // Feeds steerInput based on navigator.
-        // FixedRaycasts();        // Affects steerInput if one of raycasts detects an object front of our AI car.
-        //FeedRCC();      // Feeds motorInput.
-        //Resetting();        // Was used for deciding go back or not after crashing.
+        Navigation();
         Movement();
        
 
@@ -193,112 +160,51 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
         if (aiState == AIstate.attacking)
         {
             speed = 4f;
-            carController.accelerationMultiplier = 1;
             StartCoroutine(Attack());
         }
         if (aiState == AIstate.persuing)
         {
-            speed = 17f;
-            carController.accelerationMultiplier = 4;
-            carController.GoForward();
+            speed = 25f;
         }
         if (aiState == AIstate.idle)
         {
             carController.Brakes();
         }
     }
-  
-    
+
+    public static float AngleAroundAxis(Vector3 dirA, Vector3 dirB, Vector3 axis)
+    {
+        // Project A and B onto the plane orthogonal target axis
+        dirA = dirA - Vector3.Project(dirA, axis);
+        dirB = dirB - Vector3.Project(dirB, axis);
+
+        // Find (positive) angle between A and B
+        float angle = Vector3.Angle(dirA, dirB);
+
+        // Return angle multiplied with 1 or -1
+        return angle * (Vector3.Dot(axis, Vector3.Cross(dirA, dirB)) < 0 ? -1 : 1);
+    }
     void Navigation()
     {
-        Vector3 relativePos = targetChase.position - transform.position;
-        Quaternion rotation = Quaternion.LookRotation(relativePos);
-      
-        Quaternion current = transform.localRotation;
-        transform.localRotation = Quaternion.Slerp(current, rotation, Time.deltaTime * speed);
-
-        Debug.Log("rotation = " + rotation.z);
-        //transform.LookAt(targetChase, Vector3.forward);
-        //  navigator.SetDestination(targetChase.position);
-        // If our scene doesn't have a Waypoint Container, return with error.
-        //if(_AIType == AIType.ChasePlayer && !targetChase){
-        //	Debug.LogError("Target Chase Couldn't Found!");
-        //	enabled = false;
-        //	return;
-        //	}
-
-        // Navigator Input is multiplied by 1.5f for fast reactions.
-        float navigatorInput = Mathf.Clamp(transform.InverseTransformDirection(navigator.desiredVelocity).x, -1f, 1f);
-        //Debug.Log("inp: " + navigatorInput);
-
-        // Setting destination of the Navigator. 
-
+            Vector3 relativePos = (targetChase.position - transform.position).normalized;
+        //when navmesh is apply      
         if (navigator.isOnNavMesh)
-            navigator.SetDestination(targetChase.position);
-
-        //Steer Input.
-        if (carController.direction == 1)
-        {
-            if (true)
-                carController.steeringAxis = Mathf.Clamp((navigatorInput + rayInput), -1f, 1f);
-            /*else
-                carController.steeringAxis = Mathf.Clamp(rayInput, -1f, 1f);*/
-
-            //Debug.Log("steering: " + carController.steeringAxis);
-            //carController.TurnRight();
-        }
-        else
-        {
-            carController.steeringAxis = Mathf.Clamp((-navigatorInput - rayInput), -1f, 1f);
-            //carController.TurnLeft();
-        }
-        /*
-                // Brake Input.
-                if (!inBrakeZone)
-                {
-                    if (carController.speed >= 25)
-                    {
-                        brakeInput = Mathf.Lerp(0f, .85f, (Mathf.Abs(steerInput)));
-                    }
-                    else
-                    {
-                        brakeInput = 0f;
-                    }
-                }
-                else
-                {
-                    brakeInput = Mathf.Lerp(0f, 1f, (carController.speed - maximumSpeedInBrakeZone) / maximumSpeedInBrakeZone);
-                }
-        */
-        // Gas Input.
-        //if(!inBrakeZone){
-
-        if (carController.carSpeed >= 10)
-        {
-            if (true)
-                carController.throttleAxis = Mathf.Clamp((1f - (Mathf.Abs(navigatorInput / 10f) - Mathf.Abs(rayInput / 10f))), 0.75f, 1f);
-            /*else
-                carController.throttleAxis = 0f;*/
-        }
-        else
-        {
-            if (true)
-                carController.throttleAxis = 1f;
-            /*else
-                carController.throttleAxis = 0f;  */
-        }
-        carController.GoForward();
-
-        /*		}else{
-
-                    if(!carController.changingGear)
-                        gasInput = Mathf.Lerp(1f, 0f, (carController.speed) / maximumSpeedInBrakeZone);
-                    else
-                        gasInput = 0f;
-        ​
+                   navigator.SetDestination(targetChase.position);
+             carController.steeringAxis = Mathf.Clamp(AngleAroundAxis(transform.forward, relativePos, Vector3.up), -1f, 1f);
+           
+            if (carController.steeringAxis > 0)
+            {
+                carController.TurnRight();
             }
-        */
-
+            else if (carController.steeringAxis < 0)
+            {
+                carController.TurnLeft();
+            }            
+            else
+            {
+                carController.steeringAxis = 0;
+            
+            }
     }
 
     void FeedRCC()
@@ -306,20 +212,14 @@ public class AI_Prometeo_Car_Controller : MonoBehaviour
         // Feeding gasInput of the RCC.
         if (carController.direction == 1)
         {
-            /* if (!limitSpeed)
-             {
-                 carController.throttleAxis = gasInput;
-             }
-             else
-             {*/
             carController.throttleAxis = carController.throttleAxis * Mathf.Clamp01(Mathf.Lerp(10f, 0f, (carController.carSpeed) / 90));
-            //}
+
         }
         else
         {
             carController.throttleAxis = 0f;
         }
-        // Feeding steerInput of the RCC.
+
         if (true)
             carController.steeringAxis = Mathf.Lerp(carController.steeringAxis, 0, Time.deltaTime * 20f);
         /* else

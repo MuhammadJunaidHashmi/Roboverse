@@ -48,7 +48,7 @@ public class PrometeoCarController : MonoBehaviour
                                    // Usually the y value goes from 0 to 1.5.
     private float maxHealth = 100;
     private float currentHealth = 0;
-    display Display;
+    HealthBar healthBar;
     //WHEELS
 
     // [Header("WHEELS")]
@@ -189,7 +189,8 @@ public class PrometeoCarController : MonoBehaviour
         {
             //Debug.Log(this.name + " maginitude: " + collision.relativeVelocity.magnitude + " speed: " + collision.gameObject.GetComponent<PrometeoCarController>().carSpeed);
             if (currentHealth <= maxHealth)
-                currentHealth -= (collision.relativeVelocity.magnitude * 0.1f);
+                healthBar.DamageHealth(collision.relativeVelocity.magnitude * 0.1f, healthBar);
+                //currentHealth -= (collision.relativeVelocity.magnitude * 0.1f);
         }
 
     }
@@ -199,7 +200,9 @@ public class PrometeoCarController : MonoBehaviour
         {
            // Debug.Log(this.name + " maginitude: " + collision.relativeVelocity.magnitude + " speed: " + collision.gameObject.GetComponent<PrometeoCarController>().carSpeed);
             if (currentHealth <= maxHealth)
-                currentHealth -= (collision.relativeVelocity.magnitude * 0.8f);
+                healthBar.DamageHealth(collision.relativeVelocity.magnitude * 0.8f, healthBar);
+            //
+            //currentHealth -= (collision.relativeVelocity.magnitude * 0.8f);
         }
     }
 
@@ -208,8 +211,8 @@ public class PrometeoCarController : MonoBehaviour
     void Start()
     {
         _ = this.name.Equals(BotType.tombstone) ? botType = BotType.tombstone : botType = BotType.thinBot;
-        Display = GetComponent<display>();
-        maxHealth = currentHealth = Display.maxHealth;
+        healthBar = GetComponent<HealthBar>();
+        maxHealth = currentHealth = healthBar.maxHealth;
         /*currentHealth = maxHealth;*/
         //In this part, we set the 'carRigidbody' value with the Rigidbody attached to this
         //gameObject. Also, we define the center of mass of the car with the Vector3 given
@@ -342,7 +345,7 @@ public class PrometeoCarController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Display.slider.value = currentHealth;
+       // Display.slider.value = currentHealth;
         if (((this.transform.localEulerAngles.z > 170f) && (this.transform.localEulerAngles.z < 190f)) || (this.transform.localEulerAngles.z > 80f) && (this.transform.localEulerAngles.z < 100f))
             StartCoroutine(Reset());
 
@@ -478,52 +481,13 @@ public class PrometeoCarController : MonoBehaviour
 
     void Inputs()
     {
-        //   GoForward();
-        // TurnRight();
-        /*  if (Input.GetKey(KeyCode.W))
-          {
-              CancelInvoke("DecelerateCar");
-              deceleratingCar = false;
-              GoReverse();
-          }
-          if (Input.GetKey(KeyCode.S))
-          {
-              CancelInvoke("DecelerateCar");
-              deceleratingCar = false;
-              GoForward();
-          }
-
-          if (Input.GetKey(KeyCode.A))
-          {
-              TurnRight();
-          }
-          if (Input.GetKey(KeyCode.D))
-          {
-              TurnLeft();
-          }
-          if (Input.GetKey(KeyCode.Space))
-          {
-              CancelInvoke("DecelerateCar");
-              deceleratingCar = false;
-              Handbrake();
-          }
-          if (Input.GetKeyUp(KeyCode.Space))
-          {
-              RecoverTraction();
-          }
-          if ((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)))
-          {
-              ThrottleOff();
-          }
-          if ((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && !Input.GetKey(KeyCode.Space) && !deceleratingCar)
-          {
-              InvokeRepeating("DecelerateCar", 0f, 0.1f);
-              deceleratingCar = true;
-          }
-          if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && steeringAxis != 0f)
-          {
-              ResetSteeringAngle();
-          }*/
+        /* throttleAxis = 0;
+         steeringAxis = 0;
+         GoForward();
+         TurnLeft();
+         TurnRight();*/
+        GoForward();
+      
     }
 
     // This method converts the car speed data from float to string, and then set the text of the UI carSpeedText with this value.
